@@ -148,15 +148,6 @@ private:
 		std::function<T1> std_task_;
 	};
 };
-
-template<>
-void MessageLoopProxy::PostTaskAndReplyRelay<void(), void()>::Run()
-{
-	std_task_();
-	origin_loop_->PostTask(
-		nbase::Bind(&PostTaskAndReplyRelay::RunReplyAndSelfDestruct, this));
-}
-
 }  // namespace nbase
 
 #endif  // BASE_MESSAGE_LOOP_PROXY_H_
