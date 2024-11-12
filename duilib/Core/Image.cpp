@@ -65,7 +65,11 @@ int ImageInfo::GetInterval(int nIndex)
 
 std::unique_ptr<ImageInfo> ImageInfo::LoadImage(const std::wstring& strImageFullPath)
 {
-	std::unique_ptr<Gdiplus::Bitmap> gdiplusBitmap(Gdiplus::Bitmap::FromFile(strImageFullPath.c_str()));
+	Gdiplus::Bitmap* p = Gdiplus::Bitmap::FromFile(strImageFullPath.c_str());
+	if (!p) {
+		return nullptr;
+	}
+	std::unique_ptr<Gdiplus::Bitmap> gdiplusBitmap(p);
 	return LoadImageByBitmap(gdiplusBitmap, strImageFullPath);
 }
 
@@ -93,7 +97,6 @@ std::unique_ptr<ImageInfo> ImageInfo::LoadImageByBitmap(std::unique_ptr<Gdiplus:
 {
 	Gdiplus::Status status;
 	status = pGdiplusBitmap->GetLastStatus();
-	ASSERT(status == Gdiplus::Ok);
 	if (status != Gdiplus::Ok) {
 		return nullptr;
 	}

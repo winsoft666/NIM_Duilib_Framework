@@ -36,13 +36,13 @@ void MainThread::Init()
 	// 默认语言使用 resources\\lang\\zh_CN
 	// 如需修改请指定 Startup 最后两个参数
 	std::wstring theme_dir = nbase::win32::GetCurrentModuleDirectory();
-	ui::GlobalManager::Startup(theme_dir + L"resources\\", ui::CreateControlCallback(), false);
+	ui::GlobalManager::Startup(theme_dir + L"resources\\", ui::CreateControlCallback(), true);
 
 	// 一个仿微信的布局示例
 	LayoutsForm::ShowCustomWindow(L"basic_layout", L"layouts", L"wechat.xml");
 
 	// 一个仿登录窗口的布局示例
-	// LayoutsForm::ShowCustomWindow(L"login", L"layouts", L"login.xml");
+	//LayoutsForm::ShowCustomWindow(L"login", L"layouts", L"login.xml");
 }
 
 void MainThread::Cleanup()

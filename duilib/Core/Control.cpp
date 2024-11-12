@@ -1209,15 +1209,39 @@ void Control::GetImage(Image& duiImage) const
 	if (duiImage.imageCache) {
 		return;
 	}
-	std::wstring sImageName = duiImage.imageAttribute.sImageName;
-	std::wstring imageFullPath = sImageName;
-	if (::PathIsRelative(sImageName.c_str())) {
-		imageFullPath = GlobalManager::GetResourcePath() + m_pWindow->GetWindowResourcePath() + sImageName;
-	}
-	imageFullPath = StringHelper::ReparsePath(imageFullPath);
 
-	if (!duiImage.imageCache || duiImage.imageCache->sImageFullPath != imageFullPath) {
-		duiImage.imageCache = GlobalManager::GetImage(imageFullPath);
+	auto fn = [&duiImage, this](const std::wstring& imageName) -> bool {
+        std::wstring imageFullPath = imageName;
+        if (::PathIsRelative(imageName.c_str())) {
+            imageFullPath = GlobalManager::GetResourcePath() + m_pWindow->GetWindowResourcePath() + imageName;
+        }
+        imageFullPath = StringHelper::ReparsePath(imageFullPath);
+
+        if (!duiImage.imageCache || duiImage.imageCache->sImageFullPath != imageFullPath) {
+            duiImage.imageCache = GlobalManager::GetImage(imageFullPath);
+        }
+
+		return duiImage.imageCache != nullptr;
+	};
+
+	const UINT scale = DpiManager::GetInstance()->GetScale();
+	std::wstring sImageName = duiImage.imageAttribute.sImageName;
+	const std::wstring::size_type lastPot = sImageName.find_last_of(L".");
+	ASSERT(lastPot != std::wstring::npos);
+
+	if (scale == 100 || lastPot == std::wstring::npos) {
+		fn(sImageName);
+	}
+	else {
+		// 当DPI缩放不为100时，优先尝试查找对应缩放的图片
+		// 如缩放为150，btn_wnd_white_close_hovered.png -> btn_wnd_white_close_hovered@150.png
+		// 如果查找不到，则使用原图进行拉伸
+		const std::wstring prefix = sImageName.substr(0, lastPot);
+		const std::wstring suffix = sImageName.substr(lastPot + 1);
+		const std::wstring imageName = StringHelper::Printf(L"%s@%d.%s", prefix.c_str(), scale, suffix.c_str());
+		if (!fn(imageName)) {
+			fn(sImageName);
+		}
 	}
 }
 
