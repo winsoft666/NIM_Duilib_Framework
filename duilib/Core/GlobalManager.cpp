@@ -198,8 +198,24 @@ void GlobalManager::AddTextColor(const std::wstring& strName, const std::wstring
 
 DWORD GlobalManager::GetTextColor(const std::wstring& strName)
 {
-	// 必须在global.xml中提前定义到颜色值
-	ASSERT(m_mapTextColor[strName] != 0);
+	ASSERT(!strName.empty());
+	if (strName.empty())
+		return 0;
+
+	// winsoft666: 2025/02/21
+	// 使用在global.xml中提前定义到颜色值或者使用十六进制颜色值
+	if (m_mapTextColor.find(strName) != m_mapTextColor.end()) 
+		return m_mapTextColor[strName];
+	
+	if (strName.at(0) == L'#')
+	{
+		std::wstring strColor = strName.substr(1);
+		LPWSTR pstr = NULL;
+		const DWORD dwColor = _tcstoul(strColor.c_str(), &pstr, 16);
+		return dwColor;
+	}
+
+	ASSERT(FALSE);
 	return m_mapTextColor[strName];
 }
 
