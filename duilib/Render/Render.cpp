@@ -477,19 +477,21 @@ void RenderContext_GdiPlus::DrawRoundRect(const UiRect& rc, const CSize& roundSi
 	graphics.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
 	Gdiplus::Pen pen(Gdiplus::Color(dwPenColor), (Gdiplus::REAL)nSize);
 
-	// 裁剪区域不能作画，导致边框有时不全，往里收缩一个像素
-	// UiRect rcInflate = rc;
-	// rcInflate.Inflate({ -1, -1, -1, -1 });
+	// winsoft666: 2025/02/25
+	// 裁剪区域不能作画，导致边框圆角有锯齿，往里收缩一个像素
+	// 但这样会出现一个弊端：如果有背景色，背景色会超出边框外一点
+	UiRect rcInflate = rc;
+	rcInflate.Inflate({ -1, -1, -1, -1 });
 
 	Gdiplus::GraphicsPath pPath;
-	pPath.AddArc(rc.left, rc.top, roundSize.cx, roundSize.cy, 180, 90);
-	pPath.AddLine(rc.left + roundSize.cx, rc.top, rc.right - roundSize.cx, rc.top);
-	pPath.AddArc(rc.right - roundSize.cx, rc.top, roundSize.cx, roundSize.cy, 270, 90);
-	pPath.AddLine(rc.right, rc.top + roundSize.cy, rc.right, rc.bottom - roundSize.cy);
-	pPath.AddArc(rc.right - roundSize.cx, rc.bottom - roundSize.cy, roundSize.cx, roundSize.cy, 0, 90);
-	pPath.AddLine(rc.right - roundSize.cx, rc.bottom, rc.left + roundSize.cx, rc.bottom);
-	pPath.AddArc(rc.left, rc.bottom - roundSize.cy, roundSize.cx, roundSize.cy, 90, 90);
-	pPath.AddLine(rc.left, rc.bottom - roundSize.cy, rc.left, rc.top + roundSize.cy);
+	pPath.AddArc(rcInflate.left, rcInflate.top, roundSize.cx, roundSize.cy, 180, 90);
+	pPath.AddLine(rcInflate.left + roundSize.cx, rcInflate.top, rcInflate.right - roundSize.cx, rcInflate.top);
+	pPath.AddArc(rcInflate.right - roundSize.cx, rcInflate.top, roundSize.cx, roundSize.cy, 270, 90);
+	pPath.AddLine(rcInflate.right, rcInflate.top + roundSize.cy, rcInflate.right, rcInflate.bottom - roundSize.cy);
+	pPath.AddArc(rcInflate.right - roundSize.cx, rcInflate.bottom - roundSize.cy, roundSize.cx, roundSize.cy, 0, 90);
+	pPath.AddLine(rcInflate.right - roundSize.cx, rcInflate.bottom, rcInflate.left + roundSize.cx, rcInflate.bottom);
+	pPath.AddArc(rcInflate.left, rcInflate.bottom - roundSize.cy, roundSize.cx, roundSize.cy, 90, 90);
+	pPath.AddLine(rcInflate.left, rcInflate.bottom - roundSize.cy, rcInflate.left, rcInflate.top + roundSize.cy);
 	pPath.CloseFigure();
 
 	graphics.DrawPath(&pen, &pPath);
